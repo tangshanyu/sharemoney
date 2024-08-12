@@ -16,19 +16,16 @@
         }
         label {
             font-size: 16px;
+            display: block;
+            margin-bottom: 5px;
         }
         input[type="number"], input[type="text"], select {
             padding: 8px;
             font-size: 14px;
             box-sizing: border-box;
-        }
-        input[type="text"], input[type="number"] {
-            width: 15%;
-            margin-right: 5%;
-        }
-        select {
-            width: 15%;
-            margin-right: 5%;
+            margin-bottom: 15px;
+            size: 10;
+            width: auto; /* 保持寬度自動調整 */
         }
         .converted-value {
             width: 15%;
@@ -51,7 +48,7 @@
         }
         .row {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 15px;
             padding: 10px;
             border-radius: 5px;
@@ -105,10 +102,17 @@
 <body>
     <h1>分帳計算器</h1>
 
-    <label for="unitPrice">一組價格: </label>
-    <input type="number" id="unitPrice" placeholder="例如 100" oninput="updateConvertedValues()">
-    <label for="conversionFactor">轉換價格: </label>
-    <input type="number" id="conversionFactor" placeholder="例如 10" oninput="updateConvertedValues()">
+    <div class="row">
+        <div>
+            <label for="unitPrice">一組價格</label>
+            <input type="number" id="unitPrice" placeholder="例如 100" oninput="updateConvertedValues()">
+        </div>
+        <div>
+            <label for="conversionFactor">轉換價格</label>
+            <input type="number" id="conversionFactor" placeholder="例如 10" oninput="updateConvertedValues()">
+        </div>
+    </div>
+
     <button onclick="addRow()">新增一行</button>
 
     <div id="inputArea"></div>
@@ -133,11 +137,25 @@
             div.className = 'row';
             div.innerHTML = `
                 <button class="delete-button" onclick="deleteRow(this)">刪除</button>
-                <input type="text" id="name${index}" placeholder="名字">
-                <input type="number" id="groupCount${index}" placeholder="組數" oninput="updateCalculatedValues(${index})">
-                <input type="number" id="currentHolding${index}" placeholder="目前持有" oninput="updateCalculatedValues(${index})">
-                <input type="number" id="settlementAmount${index}" placeholder="結算金額" readonly>
-                <span class="converted-value" id="convertedSettlement${index}">轉換後結算金額: 0</span>
+                <div>
+                    <label for="name${index}">姓名</label>
+                    <input type="text" id="name${index}" placeholder="名字">
+                </div>
+                <div>
+                    <label for="groupCount${index}">組數</label>
+                    <input type="number" id="groupCount${index}" placeholder="組數" oninput="updateCalculatedValues(${index})">
+                </div>
+                <div>
+                    <label for="currentHolding${index}">目前持有</label>
+                    <input type="number" id="currentHolding${index}" placeholder="目前持有" oninput="updateCalculatedValues(${index})">
+                </div>
+                <div>
+                    <label for="settlementAmount${index}">結算金額</label>
+                    <input type="number" id="settlementAmount${index}" placeholder="結算金額" readonly>
+                </div>
+                <div class="converted-value" id="convertedSettlement${index}">
+                    轉換後結算金額: 0
+                </div>
             `;
             inputArea.appendChild(div);
         }
@@ -218,27 +236,30 @@
             const balances = [];
 
             for (let i = 0; i < rows.length; i++) {
-                names.push(document.getElementById(`name${i}`).value);
-                const convertedSettlement = parseFloat(document.getElementById(`settlementAmount${i}`).value) || 0;
+                const name = document.getElementById(`name${i}`).value;
+                const convertedSettlement = parseFloat(document.getElementById(`convertedSettlement${i}`).textContent.split(": ")[1]);
+
+                names.push(name);
                 balances.push(convertedSettlement);
             }
 
-            const resultDiv = document.getElementById("result");
-            resultDiv.innerHTML = '';
-
-            // 分帳邏輯：負的金額給正的金額的對應人員
+            let resultText = '';
             for (let i = 0; i < balances.length; i++) {
-                for (let j = 0; j < balances.length; j++) {
-                    if (balances[i] > 0 && balances[j] < 0) {
-                        const amount = Math.min(balances[i], -balances[j]);
-                        if (amount > 0) {
-                            resultDiv.innerHTML += `<p>${names[j]} 應該給 ${names[i]} ${amount.toFixed(2)} 元</p>`;
-                            balances[i] -= amount;
-                            balances[j] += amount;
+                if (balances[i] > 0) {
+                    for (let j = 0; j < balances.length; j++) {
+                        if (balances[j] < 0) {
+                            const transferAmount = Math.min(balances[i], -balances[j]);
+                            if (transferAmount > 0) {
+                                resultText += `${names[j]} 應支付 ${transferAmount.toFixed(2)} 元給 ${names[i]}<br>`;
+                                balances[i] -= transferAmount;
+                                balances[j] += transferAmount;
+                            }
                         }
                     }
                 }
             }
+
+            document.getElementById("result").innerHTML = resultText || '已無需進行分帳。';
         }
     </script>
 </body>
