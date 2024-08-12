@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分帳計算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        label {
+            font-size: 16px;
+        }
+        input[type="number"], input[type="text"], select {
+            padding: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input[type="text"], input[type="number"] {
+            width: 15%;
+            margin-right: 5%;
+        }
+        select {
+            width: 15%;
+            margin-right: 5%;
+        }
+        .converted-value {
+            width: 15%;
+            font-size: 14px;
+            line-height: 30px;
+            text-align: right;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .row:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+        .row:nth-child(even) {
+            background-color: #e9e9e9;
+        }
+        #result p {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        #totalResult {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .delete-button {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            font-size: 14px;
+            border-radius: 5px;
+            margin-right: 5%;
+        }
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+        .error-message {
+            color: red;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        @media (max-width: 600px) {
+            input[type="text"], input[type="number"], select, .converted-value {
+                width: 100%;
+                margin: 0 0 10px 0;
+            }
+            .delete-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>分帳計算器</h1>
+
+    <label for="unitPrice">一組價格: </label>
+    <input type="number" id="unitPrice" placeholder="例如 100" oninput="updateConvertedValues()">
+    <label for="conversionFactor">轉換價格: </label>
+    <input type="number" id="conversionFactor" placeholder="例如 10" oninput="updateConvertedValues()">
+    <button onclick="addRow()">新增一行</button>
+
+    <div id="inputArea"></div>
+    <button onclick="calculateSplit()">計算分帳</button>
+
+    <h2>結果</h2>
+    <div id="result"></div>
+
+    <div id="totalResult"></div>
+    <div id="errorMessage" class="error-message"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            addRow();  // 預設新增一行
+        });
+
+        function addRow() {
+            const inputArea = document.getElementById("inputArea");
+            const div = document.createElement('div');
+            const index = inputArea.children.length;
+
+            div.className = 'row';
+            div.innerHTML = `
+                <button class="delete-button" onclick="deleteRow(this)">刪除</button>
+                <input type="text" id="name${index}" placeholder="名字">
+                <input type="number" id="groupCount${index}" placeholder="組數" oninput="updateCalculatedValues(${index})">
+                <input type="number" id="currentHolding${index}" placeholder="目前持有" oninput="updateCalculatedValues(${index})">
+                <input type="number" id="settlementAmount${index}" placeholder="結算金額" readonly>
+                <span class="converted-value" id="convertedSettlement${index}">轉換後結算金額: 0</span>
+            `;
+            inputArea.appendChild(div);
+        }
+
+        function deleteRow(button) {
+            const row = button.parentNode;
+            row.parentNode.removeChild(row);
+            updateConvertedValues();  // 更新剩餘的行的總計
+        }
+
+        function updateCalculatedValues(index) {
+            const groupCount = parseFloat(document.getElementById(`groupCount${index}`).value) || 0;
+            const unitPrice = parseFloat(document.getElementById("unitPrice").value) || 0;
+            const currentHolding = parseFloat(document.getElementById(`currentHolding${index}`).value) || 0;
+            const conversionFactor = parseFloat(document.getElementById("conversionFactor").value) || 1;
+
+            // 更新結算金額的計算公式
+            const settlementAmount = (currentHolding - groupCount * unitPrice).toFixed(2);
+            document.getElementById(`settlementAmount${index}`).value = settlementAmount;
+            const convertedSettlement = (settlementAmount / conversionFactor).toFixed(2);
+            document.getElementById(`convertedSettlement${index}`).textContent = `轉換後結算金額: ${convertedSettlement}`;
+
+            updateTotalValues();
+        }
+
+        function updateConvertedValues() {
+            const rows = document.getElementById("inputArea").children;
+            for (let i = 0; i < rows.length; i++) {
+                updateCalculatedValues(i);
+            }
+        }
+
+        function updateTotalValues() {
+            const rows = document.getElementById("inputArea").children;
+            let totalGroupCount = 0;
+            let totalOriginal = 0;
+            let totalConverted = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const groupCount = parseFloat(document.getElementById(`groupCount${i}`).value) || 0;
+                const unitPrice = parseFloat(document.getElementById("unitPrice").value) || 0;
+                const currentHolding = parseFloat(document.getElementById(`currentHolding${i}`).value) || 0;
+                const conversionFactor = parseFloat(document.getElementById("conversionFactor").value) || 1;
+
+                const settlementAmount = (currentHolding - groupCount * unitPrice);
+                const convertedSettlement = (settlementAmount / conversionFactor);
+
+                totalGroupCount += groupCount;
+                totalOriginal += settlementAmount;
+                totalConverted += convertedSettlement;
+            }
+
+            const totalAmount = totalGroupCount * parseFloat(document.getElementById("unitPrice").value || 0);
+
+            const totalResultDiv = document.getElementById("totalResult");
+            totalResultDiv.innerHTML = `
+                <p>總金額: ${totalAmount.toFixed(2)} 元</p>
+                <p>結算金額總和: ${totalOriginal.toFixed(2)} 元</p>
+            `;
+
+            const errorMessageDiv = document.getElementById("errorMessage");
+            if (totalOriginal.toFixed(2) !== '0.00') {
+                errorMessageDiv.textContent = '錯誤: 結算金額總和必須為0，無法進行分帳！';
+            } else {
+                errorMessageDiv.textContent = '';
+            }
+        }
+
+        function calculateSplit() {
+            const errorMessageDiv = document.getElementById("errorMessage");
+            if (errorMessageDiv.textContent) {
+                alert('請修正錯誤後再進行分帳。');
+                return;
+            }
+
+            const rows = document.getElementById("inputArea").children;
+            const names = [];
+            const balances = [];
+
+            for (let i = 0; i < rows.length; i++) {
+                names.push(document.getElementById(`name${i}`).value);
+                const convertedSettlement = parseFloat(document.getElementById(`settlementAmount${i}`).value) || 0;
+                balances.push(convertedSettlement);
+            }
+
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = '';
+
+            // 分帳邏輯：負的金額給正的金額的對應人員
+            for (let i = 0; i < balances.length; i++) {
+                for (let j = 0; j < balances.length; j++) {
+                    if (balances[i] > 0 && balances[j] < 0) {
+                        const amount = Math.min(balances[i], -balances[j]);
+                        if (amount > 0) {
+                            resultDiv.innerHTML += `<p>${names[j]} 應該給 ${names[i]} ${amount.toFixed(2)} 元</p>`;
+                            balances[i] -= amount;
+                            balances[j] += amount;
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
