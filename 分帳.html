@@ -13,6 +13,7 @@
         }
         h1 {
             color: #333;
+            text-align: center;
         }
         label {
             font-size: 16px;
@@ -26,7 +27,6 @@
             margin-bottom: 15px;
             width: 100%;
             max-width: 150px; /* 限制輸入框最大寬度 */
-            box-sizing: border-box;
         }
         .converted-value {
             width: 100%;
@@ -43,6 +43,7 @@
             font-size: 16px;
             border-radius: 5px;
             margin-top: 10px;
+            width: 100%;
         }
         button:hover {
             background-color: #0056b3;
@@ -54,6 +55,7 @@
             margin-bottom: 15px;
             padding: 10px;
             border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
         }
         .row:nth-child(odd) {
             background-color: #f9f9f9;
@@ -121,15 +123,14 @@
             <input type="number" id="unitPrice" placeholder="例如 100" oninput="updateConvertedValues()">
         </div>
         <div>
-            <label for="conversionFactor">轉換價格</label>
+            <label for="conversionFactor">轉換倍率</label>
             <input type="number" id="conversionFactor" placeholder="例如 10" oninput="updateConvertedValues()">
         </div>
     </div>
 
     <div id="inputArea"></div>
-    
-    <button onclick="addRow()">新增一行</button>
 
+    <button onclick="addRow()">新增一行</button>
     <button onclick="calculateSplit()">計算分帳</button>
 
     <h2>結果</h2>
@@ -204,35 +205,32 @@
 
         function updateTotalValues() {
             const rows = document.getElementById("inputArea").children;
-            let totalGroupCount = 0;
-            let totalOriginal = 0;
+            let totalPositiveHolding = 0;
             let totalConverted = 0;
 
             for (let i = 0; i < rows.length; i++) {
-                const groupCount = parseFloat(document.getElementById(`groupCount${i}`).value) || 0;
-                const unitPrice = parseFloat(document.getElementById("unitPrice").value) || 0;
                 const currentHolding = parseFloat(document.getElementById(`currentHolding${i}`).value) || 0;
-                const conversionFactor = parseFloat(document.getElementById("conversionFactor").value) || 1;
+                const convertedSettlement = parseFloat(document.getElementById(`convertedSettlement${i}`).textContent.split(": ")[1]) || 0;
 
-                const settlementAmount = (currentHolding - groupCount * unitPrice);
-                const convertedSettlement = (settlementAmount / conversionFactor);
+                if (currentHolding > 0) {
+                    totalPositiveHolding += currentHolding;
+                }
 
-                totalGroupCount += groupCount;
-                totalOriginal += settlementAmount;
                 totalConverted += convertedSettlement;
             }
 
-            const totalAmount = totalGroupCount * parseFloat(document.getElementById("unitPrice").value || 0);
+            const conversionFactor = parseFloat(document.getElementById("conversionFactor").value) || 1;
+            const chipsConversionAmount = (totalPositiveHolding / conversionFactor).toFixed(2);
 
             const totalResultDiv = document.getElementById("totalResult");
             totalResultDiv.innerHTML = `
-                <p>總金額: ${totalAmount.toFixed(2)} 元</p>
-                <p>結算金額總和: ${totalOriginal.toFixed(2)} 元</p>
+                <p>總籌碼池: ${totalPositiveHolding.toFixed(2)} 元</p>
+                <p>籌碼轉換金額: ${chipsConversionAmount} 元</p>
             `;
 
             const errorMessageDiv = document.getElementById("errorMessage");
-            if (totalOriginal.toFixed(2) !== '0.00') {
-                errorMessageDiv.textContent = '錯誤: 結算金額總和必須為0，無法進行分帳！';
+            if (parseFloat(totalConverted.toFixed(2)) !== 0) {
+                errorMessageDiv.textContent = '錯誤: 轉換後結算金額總和必須為0，無法進行分帳！';
             } else {
                 errorMessageDiv.textContent = '';
             }
