@@ -120,18 +120,21 @@
     <div class="row">
         <div>
             <label for="unitPrice">一組價格</label>
-            <input type="number" id="unitPrice" placeholder="例如 100" oninput="updateConvertedValues()">
+            <input type="number" id="unitPrice" placeholder="例如 100" onblur="checkInputs()">
         </div>
         <div>
             <label for="conversionFactor">轉換倍率</label>
-            <input type="number" id="conversionFactor" placeholder="例如 10" oninput="updateConvertedValues()">
+            <input type="number" id="conversionFactor" placeholder="例如 10" onblur="checkInputs()">
+        </div>
+        <div>
+            <button id="resetButton" onclick="resetCalculator()">重設</button>
         </div>
     </div>
 
-    <div id="inputArea"></div>
+    <div id="inputArea" style="display: none;"></div>
 
-    <button onclick="addRow()">新增一行</button>
-    <button onclick="calculateSplit()">計算分帳</button>
+    <button id="addRowButton" style="display: none;" onclick="addRow()">新增一行</button>
+    <button id="calculateButton" style="display: none;" onclick="calculateSplit()">計算分帳</button>
 
     <h2>結果</h2>
     <div id="result"></div>
@@ -140,9 +143,40 @@
     <div id="errorMessage" class="error-message"></div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            addRow();  // 預設新增一行
-        });
+        function checkInputs() {
+            const unitPrice = document.getElementById("unitPrice").value;
+            const conversionFactor = document.getElementById("conversionFactor").value;
+
+            if (unitPrice && conversionFactor) {
+                document.getElementById("inputArea").style.display = "block";
+                document.getElementById("addRowButton").style.display = "block";
+                document.getElementById("calculateButton").style.display = "block";
+                document.getElementById("unitPrice").disabled = true;
+                document.getElementById("conversionFactor").disabled = true;
+
+                if (document.getElementById("inputArea").children.length === 0) {
+                    addRow();  // 預設新增一行
+                }
+            } else {
+                document.getElementById("inputArea").style.display = "none";
+                document.getElementById("addRowButton").style.display = "none";
+                document.getElementById("calculateButton").style.display = "none";
+            }
+        }
+
+        function resetCalculator() {
+            document.getElementById("unitPrice").value = '';
+            document.getElementById("conversionFactor").value = '';
+            document.getElementById("unitPrice").disabled = false;
+            document.getElementById("conversionFactor").disabled = false;
+            document.getElementById("inputArea").innerHTML = '';
+            document.getElementById("inputArea").style.display = "none";
+            document.getElementById("addRowButton").style.display = "none";
+            document.getElementById("calculateButton").style.display = "none";
+            document.getElementById("result").innerHTML = '';
+            document.getElementById("totalResult").innerHTML = '';
+            document.getElementById("errorMessage").textContent = '';
+        }
 
         function addRow() {
             const inputArea = document.getElementById("inputArea");
@@ -215,32 +249,28 @@
                 if (currentHolding > 0) {
                     totalPositiveHolding += currentHolding;
                 }
-
                 totalConverted += convertedSettlement;
             }
 
             const conversionFactor = parseFloat(document.getElementById("conversionFactor").value) || 1;
             const chipsConversionAmount = (totalPositiveHolding / conversionFactor).toFixed(2);
 
-            const totalResultDiv = document.getElementById("totalResult");
-            totalResultDiv.innerHTML = `
-                <p>總籌碼池: ${totalPositiveHolding.toFixed(2)} 元</p>
-                <p>籌碼轉換金額: ${chipsConversionAmount} 元</p>
+            document.getElementById("totalResult").innerHTML = `
+                總籌碼池: ${totalPositiveHolding.toFixed(2)}<br>
+                籌碼轉換金額: ${chipsConversionAmount}<br>
+                目前正負相抵餘額: ${totalConverted.toFixed(2)}
             `;
-
-            const errorMessageDiv = document.getElementById("errorMessage");
-            if (parseFloat(totalConverted.toFixed(2)) !== 0) {
-                errorMessageDiv.textContent = '錯誤: 轉換後結算金額總和必須為0，無法進行分帳！';
-            } else {
-                errorMessageDiv.textContent = '';
-            }
         }
 
         function calculateSplit() {
+            const totalConverted = parseFloat(document.getElementById("totalResult").textContent.split("目前正負相抵餘額: ")[1]) || 0;
             const errorMessageDiv = document.getElementById("errorMessage");
-            if (errorMessageDiv.textContent) {
-                alert('請修正錯誤後再進行分帳。');
+
+            if (totalConverted !== 0) {
+                errorMessageDiv.textContent = `錯誤: 結算金額總和不為零，距離零差 ${totalConverted.toFixed(2)}。`;
                 return;
+            } else {
+                errorMessageDiv.textContent = '';
             }
 
             const rows = document.getElementById("inputArea").children;
