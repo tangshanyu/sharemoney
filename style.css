@@ -738,13 +738,58 @@ select.form-control {
 }
 
 /* END PERPLEXITY DESIGN SYSTEM */
-```css
 /* ==========================================================================
-   德州撲克籌碼結算器 - 樣式表
+   德州撲克籌碼結算器 - Design System Compatible Styles
    ========================================================================== */
 
+:root {
+    /* Glass effect using design system colors */
+    --glass-white: rgba(var(--color-brown-600-rgb), 0.08);
+    --glass-white-strong: rgba(var(--color-brown-600-rgb), 0.12);
+    --glass-border: var(--color-card-border);
+    --glass-shadow: rgba(var(--color-slate-900-rgb), 0.1);
+    --glass-shadow-strong: rgba(var(--color-slate-900-rgb), 0.2);
+    
+    /* Gradients using design system colors */
+    --primary-gradient: linear-gradient(135deg, var(--color-teal-500) 0%, var(--color-teal-700) 100%);
+    --secondary-gradient: linear-gradient(135deg, var(--color-orange-400) 0%, var(--color-orange-500) 100%);
+    --success-gradient: linear-gradient(135deg, var(--color-teal-300) 0%, var(--color-teal-500) 100%);
+    --warning-gradient: linear-gradient(135deg, var(--color-orange-400) 0%, var(--color-orange-500) 100%);
+    --error-gradient: linear-gradient(135deg, var(--color-red-400) 0%, var(--color-red-500) 100%);
+    
+    /* Background gradients */
+    --bg-primary: linear-gradient(135deg, var(--color-slate-900) 0%, var(--color-teal-700) 25%, var(--color-brown-600) 75%, var(--color-teal-500) 100%);
+    
+    /* Blur effects */
+    --blur-sm: blur(8px);
+    --blur-md: blur(12px);
+    --blur-lg: blur(16px);
+    --blur-xl: blur(24px);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --glass-white: rgba(var(--color-gray-400-rgb), 0.08);
+        --glass-white-strong: rgba(var(--color-gray-400-rgb), 0.12);
+        --bg-primary: linear-gradient(135deg, var(--color-charcoal-700) 0%, var(--color-teal-700) 25%, var(--color-gray-400) 75%, var(--color-teal-300) 100%);
+    }
+}
+
+[data-color-scheme="dark"] {
+    --glass-white: rgba(var(--color-gray-400-rgb), 0.08);
+    --glass-white-strong: rgba(var(--color-gray-400-rgb), 0.12);
+    --bg-primary: linear-gradient(135deg, var(--color-charcoal-700) 0%, var(--color-teal-700) 25%, var(--color-gray-400) 75%, var(--color-teal-300) 100%);
+}
+
+[data-color-scheme="light"] {
+    --glass-white: rgba(var(--color-brown-600-rgb), 0.08);
+    --glass-white-strong: rgba(var(--color-brown-600-rgb), 0.12);
+    --bg-primary: linear-gradient(135deg, var(--color-slate-900) 0%, var(--color-teal-700) 25%, var(--color-brown-600) 75%, var(--color-teal-500) 100%);
+}
+
 /* ==========================================================================
-   基礎樣式
+   Base Styles Reset
    ========================================================================== */
 
 * {
@@ -753,109 +798,190 @@ select.form-control {
     padding: 0;
 }
 
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-base);
+    line-height: var(--line-height-normal);
+}
+
 body {
     font-family: var(--font-family-base);
     font-size: var(--font-size-base);
     line-height: var(--line-height-normal);
     color: var(--color-text);
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+    background: var(--bg-primary);
     min-height: 100vh;
     padding: var(--space-16);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Background dynamic effects */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(var(--color-teal-500-rgb), 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(var(--color-orange-400-rgb), 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(var(--color-teal-300-rgb), 0.2) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
 }
 
 .container {
-    max-width: 800px;
+    max-width: var(--container-lg);
     margin: 0 auto;
-    background: var(--color-background);
+    position: relative;
+    z-index: 1;
+}
+
+/* ==========================================================================
+   Glass Card System
+   ========================================================================== */
+
+.glass-card {
+    background: var(--glass-white);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
     overflow: hidden;
-    box-shadow: var(--shadow-lg);
 }
 
-/* ==========================================================================
-   標題區域
-   ========================================================================== */
-
-.app-header {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
-    color: var(--color-btn-primary-text);
-    text-align: center;
-    padding: var(--space-32) var(--space-24);
+.glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-border), transparent);
 }
-
-.app-header h1 {
-    font-size: var(--font-size-4xl);
-    font-weight: var(--font-weight-bold);
-    margin-bottom: var(--space-8);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.subtitle {
-    font-size: var(--font-size-lg);
-    opacity: 0.9;
-    font-weight: var(--font-weight-normal);
-}
-
-/* ==========================================================================
-   卡片元件
-   ========================================================================== */
 
 .card {
     background: var(--color-surface);
-    margin: var(--space-24) 0;
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
     border: 1px solid var(--color-card-border);
+    box-shadow: var(--shadow-sm);
+    margin: var(--space-24) 0;
+    padding: 0;
+    transition: all var(--duration-normal) var(--ease-standard);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    position: relative;
     overflow: hidden;
-    transition: box-shadow var(--duration-normal) var(--ease-standard);
 }
 
 .card:hover {
-    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
 
 .card-body {
     padding: var(--space-32);
 }
 
-.card h2 {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-24);
-    display: flex;
-    align-items: center;
-    gap: var(--space-8);
+/* ==========================================================================
+   Header Section - Fixed Layout Issues
+   ========================================================================== */
+
+.app-header {
+    background: var(--glass-white-strong);
+    backdrop-filter: var(--blur-lg);
+    -webkit-backdrop-filter: var(--blur-lg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    padding: var(--space-32) var(--space-24);
+    margin-bottom: var(--space-32);
+    position: relative;
+    overflow: hidden;
+    /* Fixed layout issues */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.app-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        var(--color-primary), 
+        transparent
+    );
+}
+
+.app-header h1 {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--space-8);
+    background: linear-gradient(135deg, var(--color-text) 0%, var(--color-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 8px var(--glass-shadow-strong);
+    line-height: var(--line-height-tight);
+}
+
+.subtitle {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-normal);
+    color: var(--color-text-secondary);
+    text-shadow: 0 1px 4px var(--glass-shadow);
 }
 
 /* ==========================================================================
-   表單元件
+   Form Components
    ========================================================================== */
 
 .form-label {
     display: block;
     font-weight: var(--font-weight-medium);
     color: var(--color-text);
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--space-4);
     font-size: var(--font-size-sm);
+    text-shadow: 0 1px 2px var(--glass-shadow);
 }
 
 .form-control {
     width: 100%;
-    padding: var(--space-8) var(--space-12);
+    padding: var(--space-12) var(--space-16);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-base);
     font-size: var(--font-size-base);
     background: var(--color-surface);
+    backdrop-filter: var(--blur-sm);
     color: var(--color-text);
-    transition: border-color var(--duration-fast) var(--ease-standard),
-                box-shadow var(--duration-fast) var(--ease-standard);
+    transition: all var(--duration-normal) var(--ease-standard);
+    outline: none;
+    font-family: var(--font-family-base);
+    line-height: var(--line-height-normal);
+}
+
+.form-control::placeholder {
+    color: var(--color-text-secondary);
 }
 
 .form-control:focus {
-    outline: none;
     border-color: var(--color-primary);
+    background: var(--color-surface);
     box-shadow: var(--focus-ring);
+    transform: translateY(-1px);
 }
 
 .input-group {
@@ -863,7 +989,7 @@ body {
 }
 
 /* ==========================================================================
-   按鈕元件
+   Button System
    ========================================================================== */
 
 .btn {
@@ -880,7 +1006,27 @@ body {
     transition: all var(--duration-normal) var(--ease-standard);
     text-decoration: none;
     white-space: nowrap;
-    line-height: 1.5;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: var(--blur-sm);
+    border: 1px solid var(--color-border);
+    font-family: var(--font-family-base);
+    line-height: var(--line-height-normal);
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
 }
 
 .btn:focus-visible {
@@ -891,20 +1037,19 @@ body {
 .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
 }
 
 .btn-primary {
     background: var(--color-primary);
     color: var(--color-btn-primary-text);
+    text-shadow: 0 1px 2px rgba(var(--color-slate-900-rgb), 0.2);
 }
 
 .btn-primary:hover:not(:disabled) {
     background: var(--color-primary-hover);
-    transform: translateY(-1px);
-}
-
-.btn-primary:active:not(:disabled) {
-    background: var(--color-primary-active);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(var(--color-teal-500-rgb), 0.4);
 }
 
 .btn-secondary {
@@ -914,107 +1059,131 @@ body {
 
 .btn-secondary:hover:not(:disabled) {
     background: var(--color-secondary-hover);
-}
-
-.btn-secondary:active:not(:disabled) {
-    background: var(--color-secondary-active);
+    transform: translateY(-2px);
 }
 
 .btn-success {
     background: var(--color-success);
     color: var(--color-btn-primary-text);
+    text-shadow: 0 1px 2px rgba(var(--color-slate-900-rgb), 0.2);
 }
 
 .btn-success:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(var(--color-success-rgb), 0.4);
 }
 
 .btn-warning {
     background: var(--color-warning);
     color: var(--color-btn-primary-text);
+    text-shadow: 0 1px 2px rgba(var(--color-slate-900-rgb), 0.3);
 }
 
 .btn-warning:hover:not(:disabled) {
-    background: rgba(var(--color-warning-rgb), 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(var(--color-warning-rgb), 0.4);
 }
 
 .btn-error {
     background: var(--color-error);
     color: var(--color-btn-primary-text);
+    text-shadow: 0 1px 2px rgba(var(--color-slate-900-rgb), 0.2);
 }
 
 .btn-error:hover:not(:disabled) {
-    background: rgba(var(--color-error-rgb), 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(var(--color-error-rgb), 0.4);
 }
 
 .btn-large {
     padding: var(--space-16) var(--space-32);
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    margin-top: var(--space-24);
+    font-weight: var(--font-weight-bold);
+    margin-top: var(--space-16);
     width: 100%;
     border-radius: var(--radius-md);
 }
 
 .btn-small {
-    padding: var(--space-4) var(--space-8);
+    padding: var(--space-6) var(--space-12);
     font-size: var(--font-size-sm);
     border-radius: var(--radius-sm);
 }
 
 /* ==========================================================================
-   兌換設置區域
+   Exchange Settings Section
    ========================================================================== */
 
-.exchange-input {
-    display: flex;
-    align-items: end;
-    gap: var(--space-24);
+.exchange-section h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
     margin-bottom: var(--space-24);
+    text-align: center;
+}
+
+.exchange-input {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: var(--space-16);
+    align-items: end;
+    margin-bottom: var(--space-32);
 }
 
 .exchange-symbol {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-3xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-primary);
+    color: var(--color-text);
+    text-align: center;
     margin-bottom: var(--space-16);
+    text-shadow: 0 2px 4px var(--glass-shadow);
 }
 
 .exchange-display {
-    background: var(--color-secondary);
-    color: var(--color-text);
-    padding: var(--space-16);
+    background: var(--glass-white);
+    backdrop-filter: var(--blur-sm);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-base);
+    padding: var(--space-16);
     text-align: center;
     font-weight: var(--font-weight-semibold);
-    border: 1px solid var(--color-border);
+    font-size: var(--font-size-lg);
+    color: var(--color-text);
+    box-shadow: var(--shadow-inset-sm);
 }
 
 /* ==========================================================================
-   玩家管理區域
+   Player Management Section
    ========================================================================== */
 
 .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-24);
+    margin-bottom: var(--space-32);
+    flex-wrap: wrap;
+    gap: var(--space-16);
+}
+
+.section-header h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
 }
 
 .player-row {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: var(--space-16);
-    padding: var(--space-24);
-    background: var(--color-surface);
+    background: var(--glass-white);
+    backdrop-filter: var(--blur-sm);
+    border: 1px solid var(--color-card-border-inner);
     border-radius: var(--radius-base);
+    padding: var(--space-16);
     margin-bottom: var(--space-16);
-    border: 1px solid var(--color-card-border);
-    transition: box-shadow var(--duration-normal) var(--ease-standard);
+    transition: all var(--duration-normal) var(--ease-standard);
 }
 
 .player-row:hover {
+    background: var(--color-secondary);
+    transform: translateY(-1px);
     box-shadow: var(--shadow-sm);
 }
 
@@ -1022,95 +1191,103 @@ body {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
     gap: var(--space-16);
-    align-items: end;
+    margin-bottom: var(--space-16);
 }
 
 .player-stats {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    align-items: flex-end;
-    min-width: 150px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-16);
+    align-items: center;
 }
 
 .stat-item {
+    text-align: center;
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
 }
 
 .stat-value {
-    font-weight: var(--font-weight-semibold);
+    display: block;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-base);
     color: var(--color-text);
+    margin-top: var(--space-4);
 }
 
 .profit-positive {
     color: var(--color-success);
+    text-shadow: 0 0 8px rgba(var(--color-success-rgb), 0.3);
 }
 
 .profit-negative {
     color: var(--color-error);
+    text-shadow: 0 0 8px rgba(var(--color-error-rgb), 0.3);
 }
 
 /* ==========================================================================
-   平衡狀態
+   Balance Status Display
    ========================================================================== */
 
 .balance-status {
-    background: var(--color-surface);
-    padding: var(--space-24);
+    background: var(--glass-white-strong);
+    backdrop-filter: var(--blur-md);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-base);
+    padding: var(--space-24);
     margin: var(--space-24) 0;
-    border: 2px solid var(--color-card-border);
+    text-align: center;
 }
 
 .balance-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: var(--space-8);
 }
 
 .balance-label {
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
 }
 
 .balance-value {
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
+    margin-left: var(--space-8);
 }
 
 .balance-balanced {
     color: var(--color-success);
+    text-shadow: 0 0 12px rgba(var(--color-success-rgb), 0.4);
 }
 
 .balance-unbalanced {
     color: var(--color-error);
+    text-shadow: 0 0 12px rgba(var(--color-error-rgb), 0.4);
 }
 
 .balance-amount {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
-    text-align: center;
 }
 
 /* ==========================================================================
-   不平衡處理
+   Balance Adjustment Section
    ========================================================================== */
 
 .balance-adjustment {
-    background: rgba(var(--color-warning-rgb), var(--status-bg-opacity));
-    padding: var(--space-24);
+    background: rgba(var(--color-warning-rgb), 0.1);
+    backdrop-filter: var(--blur-md);
+    border: 1px solid rgba(var(--color-warning-rgb), 0.3);
     border-radius: var(--radius-base);
+    padding: var(--space-24);
     margin: var(--space-24) 0;
-    border: 1px solid rgba(var(--color-warning-rgb), var(--status-border-opacity));
 }
 
 .balance-adjustment h3 {
     color: var(--color-warning);
     margin-bottom: var(--space-16);
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xl);
+    text-align: center;
 }
 
 .adjustment-options {
@@ -1124,25 +1301,28 @@ body {
     align-items: center;
     gap: var(--space-16);
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .adjustment-divider {
     text-align: center;
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-secondary);
+    font-size: var(--font-size-lg);
 }
 
 /* ==========================================================================
-   結果區域
+   Tabs System
    ========================================================================== */
 
 .tabs {
     display: flex;
-    background: var(--color-surface);
+    background: var(--glass-white);
     border-radius: var(--radius-base);
-    padding: var(--space-4);
+    padding: var(--space-2);
     margin-bottom: var(--space-24);
-    border: 1px solid var(--color-border);
+    backdrop-filter: var(--blur-sm);
+    border: 1px solid var(--color-card-border-inner);
 }
 
 .tab-btn {
@@ -1153,17 +1333,17 @@ body {
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--duration-normal) var(--ease-standard);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
 }
 
 .tab-btn.active {
-    background: var(--color-primary);
-    color: var(--color-btn-primary-text);
-}
-
-.tab-btn:hover:not(.active) {
     background: var(--color-secondary);
+    color: var(--color-text);
+    box-shadow: var(--shadow-xs);
+    backdrop-filter: var(--blur-sm);
 }
 
 .tab-content {
@@ -1172,80 +1352,101 @@ body {
 
 .tab-content.active {
     display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .tab-content h3 {
     margin-bottom: var(--space-24);
     color: var(--color-text);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xl);
+    text-align: center;
 }
 
 /* ==========================================================================
-   轉帳清單
+   Results Display
    ========================================================================== */
 
 .transfer-item {
-    background: var(--color-surface);
-    padding: var(--space-24);
+    background: rgba(var(--color-primary-rgb, var(--color-teal-500-rgb)), 0.1);
+    backdrop-filter: var(--blur-sm);
+    border: 1px solid rgba(var(--color-primary-rgb, var(--color-teal-500-rgb)), 0.2);
     border-radius: var(--radius-base);
+    padding: var(--space-16);
     margin-bottom: var(--space-16);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-left: 4px solid var(--color-info);
-    border: 1px solid var(--color-card-border);
-    border-left: 4px solid var(--color-info);
+    transition: all var(--duration-normal) var(--ease-standard);
+}
+
+.transfer-item:hover {
+    background: rgba(var(--color-primary-rgb, var(--color-teal-500-rgb)), 0.15);
+    transform: translateX(4px);
 }
 
 .transfer-details {
     flex: 1;
+    font-weight: var(--font-weight-medium);
 }
 
 .transfer-amount {
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-bold);
     font-size: var(--font-size-lg);
-    color: var(--color-error);
+    color: var(--color-primary);
+    text-shadow: 0 0 8px rgba(var(--color-primary-rgb, var(--color-teal-500-rgb)), 0.3);
 }
-
-/* ==========================================================================
-   損益清單
-   ========================================================================== */
 
 .profit-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--space-16) var(--space-24);
+    padding: var(--space-16);
     border-radius: var(--radius-base);
     margin-bottom: var(--space-8);
-    background: var(--color-surface);
-    border: 1px solid var(--color-card-border);
+    background: var(--glass-white);
+    backdrop-filter: var(--blur-sm);
+    border: 1px solid var(--color-card-border-inner);
+    transition: all var(--duration-normal) var(--ease-standard);
+}
+
+.profit-item:hover {
+    background: var(--color-secondary);
+    transform: translateX(4px);
 }
 
 .profit-name {
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
 }
 
 .profit-amount {
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-bold);
     font-size: var(--font-size-lg);
 }
 
 /* ==========================================================================
-   底部
+   Footer Section
    ========================================================================== */
 
 .app-footer {
-    background: var(--color-surface);
+    background: var(--glass-white);
+    backdrop-filter: var(--blur-md);
+    border: 1px solid var(--color-card-border-inner);
+    border-radius: var(--radius-base);
     text-align: center;
-    padding: var(--space-24);
+    padding: var(--space-16);
+    margin-top: var(--space-32);
     color: var(--color-text-secondary);
     font-size: var(--font-size-sm);
-    border-top: 1px solid var(--color-border);
 }
 
 /* ==========================================================================
-   響應式設計
+   Responsive Design - Mobile Optimization
    ========================================================================== */
 
 @media (max-width: 768px) {
@@ -1254,35 +1455,45 @@ body {
     }
     
     .container {
-        border-radius: 0;
-    }
-    
-    .card-body {
-        padding: var(--space-24);
+        width: 100%;
     }
     
     .app-header {
-        padding: var(--space-32) var(--space-24);
+        padding: var(--space-24) var(--space-16);
+        margin-bottom: var(--space-24);
     }
     
     .app-header h1 {
-        font-size: var(--font-size-2xl);
+        font-size: var(--font-size-3xl);
+    }
+    
+    .subtitle {
+        font-size: var(--font-size-base);
+    }
+    
+    .card-body {
+        padding: var(--space-16);
     }
     
     .exchange-input {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         gap: var(--space-16);
+        text-align: center;
     }
     
     .exchange-symbol {
-        align-self: center;
-        margin: 0;
+        order: 2;
+        margin: var(--space-8) 0;
+        font-size: var(--font-size-2xl);
     }
     
     .section-header {
         flex-direction: column;
-        gap: var(--space-16);
-        align-items: stretch;
+        text-align: center;
+    }
+    
+    .section-header h2 {
+        font-size: var(--font-size-xl);
     }
     
     .player-inputs {
@@ -1290,13 +1501,9 @@ body {
         gap: var(--space-8);
     }
     
-    .player-row {
-        grid-template-columns: 1fr;
-        gap: var(--space-8);
-    }
-    
     .player-stats {
-        align-items: flex-start;
+        grid-template-columns: 1fr;
+        text-align: center;
     }
     
     .adjustment-group {
@@ -1307,55 +1514,142 @@ body {
     .balance-info {
         flex-direction: column;
         gap: var(--space-4);
-        text-align: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .app-header h1 {
-        font-size: var(--font-size-xl);
     }
     
-    .card-body {
-        padding: var(--space-16);
-    }
-    
-    .transfer-item {
+    .transfer-item,
+    .profit-item {
         flex-direction: column;
         text-align: center;
         gap: var(--space-8);
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
     }
     
     .tabs {
         flex-direction: column;
-        gap: var(--space-4);
     }
     
-    .btn-large {
-        font-size: var(--font-size-base);
-        padding: var(--space-12) var(--space-24);
+    .tab-btn {
+        border-radius: var(--radius-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: var(--space-6);
     }
     
-    .profit-item {
-        flex-direction: column;
-        gap: var(--space-8);
-        text-align: center;
+    .app-header {
+        padding: var(--space-16) var(--space-12);
     }
     
-    .balance-status {
-        padding: var(--space-16);
+    .app-header h1 {
+        font-size: var(--font-size-2xl);
     }
     
+    .subtitle {
+        font-size: var(--font-size-sm);
+    }
+    
+    .card-body {
+        padding: var(--space-12);
+    }
+    
+    .player-row {
+        padding: var(--space-12);
+    }
+    
+    .balance-status,
     .balance-adjustment {
         padding: var(--space-16);
     }
     
-    .player-row {
-        padding: var(--space-16);
+    .exchange-section h2,
+    .section-header h2 {
+        font-size: var(--font-size-lg);
     }
     
-    .exchange-input {
-        gap: var(--space-12);
+    .exchange-symbol {
+        font-size: var(--font-size-xl);
+    }
+    
+    .btn-large {
+        padding: var(--space-12) var(--space-20);
+    }
+    
+    .form-control {
+        padding: var(--space-10) var(--space-12);
     }
 }
-```
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: slideInUp 0.6s var(--ease-standard) both;
+}
+
+.card:nth-child(1) { animation-delay: 0.1s; }
+.card:nth-child(2) { animation-delay: 0.2s; }
+.card:nth-child(3) { animation-delay: 0.3s; }
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--glass-white);
+    border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: var(--radius-sm);
+    backdrop-filter: blur(8px);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+}
+
+/* ==========================================================================
+   Accessibility
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast support */
+@media (prefers-contrast: high) {
+    .glass-card,
+    .card {
+        border-width: 2px;
+    }
+    
+    .form-control:focus {
+        box-shadow: 0 0 0 3px var(--color-primary);
+    }
+}
