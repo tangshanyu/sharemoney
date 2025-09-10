@@ -1,11 +1,13 @@
 /**
  * 德州撲克籌碼結算計算器
- * 主要功能類別
+ * 主要功能類別 - 修正版本
  */
 class PokerSettlementCalculator {
     constructor() {
         this.players = [];
         this.exchangeRate = 0.5; // 預設: 1 籌碼 = 0.5 現金
+        this.chipAmountPerSet = 1000; // 每組籌碼數量
+        this.cashAmountPerSet = 500; // 每組現金價格
         this.playerIdCounter = 0;
         this.init();
     }
@@ -48,10 +50,13 @@ class PokerSettlementCalculator {
      * 更新兌換比例
      */
     updateExchangeRate() {
-        const chipAmount = parseFloat(document.getElementById('chipAmount').value) || 1;
-        const cashAmount = parseFloat(document.getElementById('cashAmount').value) || 1;
+        const chipAmount = parseFloat(document.getElementById('chipAmount').value) || 1000;
+        const cashAmount = parseFloat(document.getElementById('cashAmount').value) || 500;
         
-        this.exchangeRate = cashAmount / chipAmount;
+        this.chipAmountPerSet = chipAmount; // 每組籌碼數量
+        this.cashAmountPerSet = cashAmount; // 每組現金價格
+        this.exchangeRate = cashAmount / chipAmount; // 兌換比例：1籌碼值多少現金
+        
         document.getElementById('exchangeRate').textContent = 
             `1 籌碼 = ${this.exchangeRate.toFixed(4)} 現金`;
         
@@ -62,9 +67,8 @@ class PokerSettlementCalculator {
      * 添加初始示例玩家
      */
     addInitialPlayers() {
-        this.addPlayer('小明', 2, 1500);
-        this.addPlayer('小華', 1, 1200);
-        this.addPlayer('小李', 1, 800);
+        // 按照用户的例子：買1組，剩餘1000籌碼，損益應為0
+        this.addPlayer('示例玩家', 1, 1000);
     }
 
     /**
@@ -114,9 +118,9 @@ class PokerSettlementCalculator {
                 </div>
             </div>
             <div class="player-stats">
-                <div class="stat-item">成本: <span class="stat-value" id="cost-${player.id}">0</span></div>
-                <div class="stat-item">剩餘價值: <span class="stat-value" id="value-${player.id}">0</span></div>
-                <div class="stat-item">損益: <span class="stat-value" id="profit-${player.id}">0</span></div>
+                <div class="stat-item">成本: $<span class="stat-value" id="cost-${player.id}">0</span></div>
+                <div class="stat-item">剩餘價值: $<span class="stat-value" id="value-${player.id}">0</span></div>
+                <div class="stat-item">損益: $<span class="stat-value" id="profit-${player.id}">0</span></div>
                 <button class="btn btn-error btn-small" onclick="calculator.removePlayer(${player.id})">
                     🗑️ 刪除
                 </button>
@@ -152,16 +156,20 @@ class PokerSettlementCalculator {
     }
 
     /**
-     * 更新玩家統計資料
+     * 更新玩家統計資料 - 修正計算邏輯
      */
     updatePlayerStats(playerId) {
         const player = this.players.find(p => p.id === playerId);
         if (!player) return;
 
-        const chipAmount = parseFloat(document.getElementById('chipAmount').value) || 1000;
-        const cost = player.chipsBought * chipAmount;
-        const remainingValue = player.chipsRemaining * this.exchangeRate;
-        const profitLoss = remainingValue - cost;
+        // 正確的計算邏輯：
+        // 1. 成本 = 購買組數 × 每組現金價格
+        // 2. 剩餘價值 = 剩餘籌碼 × 兌換比例（每籌碼值多少現金）
+        // 3. 損益 = 剩餘價值 - 成本
+
+        const cost = player.chipsBought * this.cashAmountPerSet; // 成本（現金）
+        const remainingValue = player.chipsRemaining * this.exchangeRate; // 剩餘價值（現金）
+        const profitLoss = remainingValue - cost; // 損益（現金）
 
         // 更新顯示
         document.getElementById(`cost-${playerId}`).textContent = cost.toFixed(0);
@@ -187,11 +195,11 @@ class PokerSettlementCalculator {
      * 更新平衡狀態
      */
     updateBalanceStatus() {
-        const chipAmount = parseFloat(document.getElementById('chipAmount').value) || 1000;
         let totalBalance = 0;
 
+        // 計算所有玩家的總損益
         this.players.forEach(player => {
-            const cost = player.chipsBought * chipAmount;
+            const cost = player.chipsBought * this.cashAmountPerSet;
             const remainingValue = player.chipsRemaining * this.exchangeRate;
             const profitLoss = remainingValue - cost;
             totalBalance += profitLoss;
@@ -204,12 +212,12 @@ class PokerSettlementCalculator {
         if (Math.abs(totalBalance) < 0.01) { // 考慮浮點數精度
             balanceValue.textContent = '平衡';
             balanceValue.className = 'balance-value balance-balanced';
-            balanceAmount.textContent = '差額: 0';
+            balanceAmount.textContent = '差額: $0';
             balanceAdjustment.style.display = 'none';
         } else {
             balanceValue.textContent = '不平衡';
             balanceValue.className = 'balance-value balance-unbalanced';
-            balanceAmount.textContent = `差額: ${totalBalance.toFixed(2)}`;
+            balanceAmount.textContent = `差額: $${totalBalance.toFixed(2)}`;
             balanceAdjustment.style.display = 'block';
         }
     }
@@ -239,11 +247,11 @@ class PokerSettlementCalculator {
             return;
         }
 
-        const chipAmount = parseFloat(document.getElementById('chipAmount').value) || 1000;
         let totalBalance = 0;
 
+        // 計算總體不平衡金額
         this.players.forEach(player => {
-            const cost = player.chipsBought * chipAmount;
+            const cost = player.chipsBought * this.cashAmountPerSet;
             const remainingValue = player.chipsRemaining * this.exchangeRate;
             const profitLoss = remainingValue - cost;
             totalBalance += profitLoss;
@@ -252,13 +260,14 @@ class PokerSettlementCalculator {
         // 調整選中玩家的剩餘籌碼來平衡帳目
         const selectedPlayer = this.players.find(p => p.id == selectedPlayerId);
         if (selectedPlayer) {
+            // 需要調整的籌碼數量 = 差額 ÷ 兌換比例
             const adjustment = -totalBalance / this.exchangeRate;
             selectedPlayer.chipsRemaining += adjustment;
             
             // 更新輸入框
             const input = document.querySelector(`[data-player-id="${selectedPlayerId}"] .player-remaining`);
             if (input) {
-                input.value = selectedPlayer.chipsRemaining.toFixed(0);
+                input.value = Math.round(selectedPlayer.chipsRemaining);
             }
             
             this.updateAllCalculations();
@@ -296,9 +305,8 @@ class PokerSettlementCalculator {
         }
 
         // 準備數據
-        const chipAmount = parseFloat(document.getElementById('chipAmount').value) || 1000;
         const settlements = this.players.map(player => {
-            const cost = player.chipsBought * chipAmount;
+            const cost = player.chipsBought * this.cashAmountPerSet;
             const remainingValue = player.chipsRemaining * this.exchangeRate;
             const profitLoss = remainingValue - cost;
             
@@ -321,8 +329,8 @@ class PokerSettlementCalculator {
      */
     calculateTransfers(settlements) {
         const transfers = [];
-        const debtors = settlements.filter(s => s.amount < 0).map(s => ({...s}));
-        const creditors = settlements.filter(s => s.amount > 0).map(s => ({...s}));
+        const debtors = settlements.filter(s => s.amount < -0.01).map(s => ({...s}));
+        const creditors = settlements.filter(s => s.amount > 0.01).map(s => ({...s}));
 
         // 貪心演算法：每次選擇最大債務人和最大債權人配對
         while (debtors.length > 0 && creditors.length > 0) {
