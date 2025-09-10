@@ -1,153 +1,117 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-TW">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>德州撲克籌碼結算器</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
     <div class="container">
-      <header class="app-header">
-        <h1>🎯 德州撲克籌碼結算器</h1>
-        <p class="subtitle">輕鬆計算籌碼兌換與分帳</p>
-      </header>
+        <header class="app-header">
+            <h1>🎯 德州撲克籌碼結算器</h1>
+            <p class="subtitle">輕鬆計算籌碼兌換與分帳</p>
+        </header>
 
-      <!-- 兌換比例設置 -->
-      <section class="exchange-section card">
-        <div class="card-body">
-          <h2>💰 籌碼兌換比例設定</h2>
-          <div class="exchange-input">
-            <div class="input-group">
-              <label class="form-label">籌碼數量</label>
-              <input
-                type="number"
-                id="chipAmount"
-                class="form-control"
-                value="1000"
-                min="1"
-                step="100"
-              />
+        <!-- 兌換比例設置 -->
+        <section class="exchange-section card">
+            <div class="card-body">
+                <h2>💰 籌碼兌換比例設定</h2>
+                <div class="exchange-input">
+                    <div class="input-group">
+                        <label class="form-label">籌碼數量</label>
+                        <input type="number" id="chipAmount" class="form-control" value="1000" min="1" step="100">
+                    </div>
+                    <div class="exchange-symbol">=</div>
+                    <div class="input-group">
+                        <label class="form-label">現金金額</label>
+                        <input type="number" id="cashAmount" class="form-control" value="500" min="1" step="50">
+                    </div>
+                </div>
+                <div class="exchange-display">
+                    <span id="exchangeRate">1 籌碼 = 0.5 現金</span>
+                </div>
             </div>
-            <div class="exchange-symbol">=</div>
-            <div class="input-group">
-              <label class="form-label">現金金額</label>
-              <input
-                type="number"
-                id="cashAmount"
-                class="form-control"
-                value="500"
-                min="1"
-                step="50"
-              />
+        </section>
+
+        <!-- 玩家資訊輸入 -->
+        <section class="players-section card">
+            <div class="card-body">
+                <div class="section-header">
+                    <h2>👥 玩家資訊</h2>
+                    <button class="btn btn-primary" id="addPlayerBtn">+ 添加玩家</button>
+                </div>
+                
+                <div class="players-container" id="playersContainer">
+                    <!-- 玩家行將通過JavaScript動態添加 -->
+                </div>
+
+                <div class="balance-status" id="balanceStatus">
+                    <div class="balance-info">
+                        <span class="balance-label">總體平衡狀態：</span>
+                        <span class="balance-value" id="balanceValue">平衡</span>
+                    </div>
+                    <div class="balance-amount" id="balanceAmount">差額: 0</div>
+                </div>
+
+                <!-- 不平衡處理選項 -->
+                <div class="balance-adjustment" id="balanceAdjustment" style="display: none;">
+                    <h3>⚖️ 處理帳目不平衡</h3>
+                    <div class="adjustment-options">
+                        <div class="adjustment-group">
+                            <label>將差額分配給：</label>
+                            <select id="adjustmentPlayer" class="form-control">
+                                <option value="">選擇玩家</option>
+                            </select>
+                            <button class="btn btn-secondary" id="adjustBalanceBtn">調整差額</button>
+                        </div>
+                        <div class="adjustment-divider">或</div>
+                        <button class="btn btn-warning" id="reenterDataBtn">🔄 重新輸入數據</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-success btn-large" id="calculateBtn">🧮 計算結算</button>
             </div>
-          </div>
-          <div class="exchange-display">
-            <span id="exchangeRate">1 籌碼 = 0.5 現金</span>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- 玩家資訊輸入 -->
-      <section class="players-section card">
-        <div class="card-body">
-          <div class="section-header">
-            <h2>👥 玩家資訊</h2>
-            <button class="btn btn-primary" id="addPlayerBtn">
-              + 添加玩家
-            </button>
-          </div>
+        <!-- 結算結果 -->
+        <section class="results-section card" id="resultsSection" style="display: none;">
+            <div class="card-body">
+                <h2>📊 結算結果</h2>
+                
+                <!-- 選項卡 -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="transfers">轉帳方案</button>
+                    <button class="tab-btn" data-tab="profits">損益報告</button>
+                </div>
 
-          <div class="players-container" id="playersContainer">
-            <!-- 玩家行將通過JavaScript動態添加 -->
-          </div>
+                <!-- 轉帳方案 -->
+                <div class="tab-content active" id="transfers">
+                    <h3>💸 轉帳方案</h3>
+                    <div id="transfersList" class="transfers-list">
+                        <!-- 轉帳清單將通過JavaScript生成 -->
+                    </div>
+                </div>
 
-          <div class="balance-status" id="balanceStatus">
-            <div class="balance-info">
-              <span class="balance-label">總體平衡狀態：</span>
-              <span class="balance-value" id="balanceValue">平衡</span>
+                <!-- 損益報告 -->
+                <div class="tab-content" id="profits">
+                    <h3>📈 各玩家損益</h3>
+                    <div id="profitsList" class="profits-list">
+                        <!-- 損益清單將通過JavaScript生成 -->
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="finalCalculateBtn">🔄 重新計算</button>
             </div>
-            <div class="balance-amount" id="balanceAmount">差額: 0</div>
-          </div>
+        </section>
 
-          <!-- 不平衡處理選項 -->
-          <div
-            class="balance-adjustment"
-            id="balanceAdjustment"
-            style="display: none"
-          >
-            <h3>⚖️ 處理帳目不平衡</h3>
-            <div class="adjustment-options">
-              <div class="adjustment-group">
-                <label>將差額分配給：</label>
-                <select id="adjustmentPlayer" class="form-control">
-                  <option value="">選擇玩家</option>
-                </select>
-                <button class="btn btn-secondary" id="adjustBalanceBtn">
-                  調整差額
-                </button>
-              </div>
-              <div class="adjustment-divider">或</div>
-              <button class="btn btn-warning" id="reenterDataBtn">
-                🔄 重新輸入數據
-              </button>
-            </div>
-          </div>
-
-          <button class="btn btn-success btn-large" id="calculateBtn">
-            🧮 計算結算
-          </button>
-        </div>
-      </section>
-
-      <!-- 結算結果 -->
-      <section
-        class="results-section card"
-        id="resultsSection"
-        style="display: none"
-      >
-        <div class="card-body">
-          <h2>📊 結算結果</h2>
-
-          <!-- 選項卡 -->
-          <div class="tabs">
-            <button class="tab-btn active" data-tab="transfers">
-              轉帳方案
-            </button>
-            <button class="tab-btn" data-tab="profits">損益報告</button>
-          </div>
-
-          <!-- 轉帳方案 -->
-          <div class="tab-content active" id="transfers">
-            <h3>💸 轉帳方案</h3>
-            <div id="transfersList" class="transfers-list">
-              <!-- 轉帳清單將通過JavaScript生成 -->
-            </div>
-          </div>
-
-          <!-- 損益報告 -->
-          <div class="tab-content" id="profits">
-            <h3>📈 各玩家損益</h3>
-            <div id="profitsList" class="profits-list">
-              <!-- 損益清單將通過JavaScript生成 -->
-            </div>
-          </div>
-
-          <button class="btn btn-primary" id="finalCalculateBtn">
-            🔄 重新計算
-          </button>
-        </div>
-      </section>
-
-      <footer class="app-footer">
-        <p>德州撲克籌碼結算器 v2.0 | 讓遊戲結算更簡單</p>
-      </footer>
+        <footer class="app-footer">
+            <p>德州撲克籌碼結算器 v2.0 | 讓遊戲結算更簡單</p>
+        </footer>
     </div>
 
     <script>
-      var script = document.createElement("script");
-      script.src = "app.js?v=" + new Date().getTime(); // 用當下時間避免快取
-      document.head.appendChild(script);
+        document.write('<script src="app.js?v=' + new Date().getTime() + '"><\/script>');
     </script>
-  </body>
+</body>
 </html>
