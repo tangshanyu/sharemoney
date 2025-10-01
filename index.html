@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-color-scheme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,7 +48,10 @@
             <div class="card-body">
                 <div class="section-header">
                     <h2>🃏 玩家資訊</h2>
-                    <button class="btn btn-poker" id="addPlayerBtn">♠ 添加玩家</button>
+                    <div class="section-actions">
+                        <button class="btn btn-secondary" id="showImportModalBtn">匯入外部資料</button>
+                        <button class="btn btn-poker" id="addPlayerBtn">♠ 添加玩家</button>
+                    </div>
                 </div>
                 
                 <div class="players-container" id="playersContainer">
@@ -92,6 +95,7 @@
                 <div class="tabs">
                     <button class="tab-btn active" data-tab="transfers">💸 轉帳方案</button>
                     <button class="tab-btn" data-tab="profits">📈 損益報告</button>
+                    <button class="tab-btn" data-tab="export">📋 匯出文字</button>
                 </div>
 
                 <!-- 轉帳方案 -->
@@ -110,6 +114,13 @@
                     </div>
                 </div>
 
+                <!-- 匯出文字 -->
+                <div class="tab-content" id="export">
+                    <h3>📋 匯出文字</h3>
+                    <textarea id="exportTextArea" class="form-control" rows="10" readonly></textarea>
+                    <button class="btn btn-primary" id="copyExportBtn">📄 複製文字</button>
+                </div>
+
                 <button class="btn btn-primary btn-large" id="finalCalculateBtn">🔄 重新計算</button>
             </div>
         </section>
@@ -121,5 +132,16 @@
     </div>
 
     <script src="app.js?v=1"></script>
+
+    <!-- Import Data Modal -->
+    <div id="importModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" id="closeImportModalBtn">&times;</span>
+            <h2>匯入外部資料</h2>
+            <p>請貼上資料，格式為：姓名 購買組數 剩餘籌碼，每位玩家一行。</p>
+            <textarea id="importDataTextArea" class="form-control" rows="10" placeholder="毛毛 1 3000"></textarea>
+            <button class="btn btn-primary" id="importDataBtn">匯入</button>
+        </div>
+    </div>
 </body>
 </html>

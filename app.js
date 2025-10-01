@@ -31,6 +31,9 @@ class PokerSettlementCalculator {
         
         // 玩家管理
         document.getElementById('addPlayerBtn').addEventListener('click', () => this.addPlayer());
+        document.getElementById('showImportModalBtn').addEventListener('click', () => this.showImportModal());
+        document.getElementById('closeImportModalBtn').addEventListener('click', () => this.hideImportModal());
+        document.getElementById('importDataBtn').addEventListener('click', () => this.importData());
         
         // 平衡調整
         document.getElementById('adjustBalanceBtn').addEventListener('click', () => this.adjustBalance());
@@ -39,10 +42,16 @@ class PokerSettlementCalculator {
         // 計算按鈕
         document.getElementById('calculateBtn').addEventListener('click', () => this.calculateSettlement());
         document.getElementById('finalCalculateBtn').addEventListener('click', () => this.recalculate());
+        document.getElementById('copyExportBtn').addEventListener('click', () => this.copyExportText());
         
         // 選項卡切換
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
+            btn.addEventListener('click', (e) => {
+                this.switchTab(e.target.dataset.tab);
+                if (e.target.dataset.tab === 'export') {
+                    this.generateExportText();
+                }
+            });
         });
     }
 
@@ -329,21 +338,22 @@ class PokerSettlementCalculator {
      */
     calculateTransfers(settlements) {
         const transfers = [];
-        const debtors = settlements.filter(s => s.amount < -0.01).map(s => ({...s}));
-        const creditors = settlements.filter(s => s.amount > 0.01).map(s => ({...s}));
+        let debtors = settlements.filter(s => s.amount < -0.01).map(s => ({ ...s }));
+        let creditors = settlements.filter(s => s.amount > 0.01).map(s => ({ ...s }));
 
-        // 貪心演算法：每次選擇最大債務人和最大債權人配對
-        while (debtors.length > 0 && creditors.length > 0) {
-            // 排序：債務從大到小，債權從大到小
-            debtors.sort((a, b) => a.amount - b.amount);
-            creditors.sort((a, b) => b.amount - a.amount);
+        // Sort once
+        debtors.sort((a, b) => a.amount - b.amount); // Most negative first
+        creditors.sort((a, b) => b.amount - a.amount); // Most positive first
 
-            const debtor = debtors[0];
-            const creditor = creditors[0];
-            
+        let i = 0; // debtor index
+        let j = 0; // creditor index
+
+        while (i < debtors.length && j < creditors.length) {
+            const debtor = debtors[i];
+            const creditor = creditors[j];
             const transferAmount = Math.min(-debtor.amount, creditor.amount);
-            
-            if (transferAmount > 0.01) { // 避免微小金額轉帳
+
+            if (transferAmount > 0.01) {
                 transfers.push({
                     from: debtor.name,
                     to: creditor.name,
@@ -351,16 +361,14 @@ class PokerSettlementCalculator {
                 });
             }
 
-            // 更新餘額
             debtor.amount += transferAmount;
             creditor.amount -= transferAmount;
 
-            // 移除已結清的玩家
             if (Math.abs(debtor.amount) < 0.01) {
-                debtors.shift();
+                i++;
             }
             if (Math.abs(creditor.amount) < 0.01) {
-                creditors.shift();
+                j++;
             }
         }
 
@@ -416,6 +424,97 @@ class PokerSettlementCalculator {
      */
     recalculate() {
         this.calculateSettlement();
+    }
+
+    /**
+     * 生成匯出文字
+     */
+    generateExportText() {
+        let exportText = "德州撲克結算\n";
+        exportText += "====================\n";
+        exportText += `日期: ${new Date().toLocaleDateString()}\n`;
+        exportText += `兌換比例: ${this.chipAmountPerSet} 籌碼 = ${this.cashAmountPerSet} 現金\n`;
+        exportText += "====================\n\n";
+
+        this.players.forEach(player => {
+            const cost = player.chipsBought * this.cashAmountPerSet;
+            const remainingValue = player.chipsRemaining * this.exchangeRate;
+            const profitLoss = remainingValue - cost;
+
+            exportText += `玩家: ${player.name || `玩家 ${player.id + 1}`}\n`;
+            exportText += `  - 購買籌碼組數: ${player.chipsBought}\n`;
+            exportText += `  - 剩餘籌碼: ${player.chipsRemaining.toFixed(0)}\n`;
+            exportText += `  - 成本: $${cost.toFixed(0)}\n`;
+            exportText += `  - 剩餘價值: $${remainingValue.toFixed(0)}\n`;
+            exportText += `  - 損益: $${(profitLoss >= 0 ? '+' : '')}${profitLoss.toFixed(0)}\n\n`;
+        });
+
+        const settlements = this.players.map(player => {
+            const cost = player.chipsBought * this.cashAmountPerSet;
+            const remainingValue = player.chipsRemaining * this.exchangeRate;
+            const profitLoss = remainingValue - cost;
+            return { name: player.name || `玩家 ${player.id + 1}`, amount: profitLoss };
+        });
+
+        const transfers = this.calculateTransfers(settlements);
+        if (transfers.length > 0) {
+            exportText += "轉帳方案:\n";
+            transfers.forEach(transfer => {
+                exportText += `  - ${transfer.from} 需支付給 ${transfer.to} $${transfer.amount.toFixed(2)}\n`;
+            });
+        }
+
+        document.getElementById('exportTextArea').value = exportText;
+    }
+
+    /**
+     * 複製匯出文字
+     */
+    copyExportText() {
+        const textArea = document.getElementById('exportTextArea');
+        textArea.select();
+        document.execCommand('copy');
+        alert('已複製到剪貼簿');
+    }
+
+    /**
+     * 顯示匯入視窗
+     */
+    showImportModal() {
+        document.getElementById('importModal').style.display = 'block';
+    }
+
+    /**
+     * 隱藏匯入視窗
+     */
+    hideImportModal() {
+        document.getElementById('importModal').style.display = 'none';
+    }
+
+    /**
+     * 匯入資料
+     */
+    importData() {
+        const data = document.getElementById('importDataTextArea').value.trim();
+        if (!data) {
+            alert('請輸入資料');
+            return;
+        }
+
+        const lines = data.split('\n');
+        lines.forEach(line => {
+            const parts = line.split(/\s+/);
+            if (parts.length === 3) {
+                const name = parts[0];
+                const chipsBought = parseFloat(parts[1]);
+                const chipsRemaining = parseFloat(parts[2]);
+                if (!isNaN(chipsBought) && !isNaN(chipsRemaining)) {
+                    this.addPlayer(name, chipsBought, chipsRemaining);
+                }
+            }
+        });
+
+        this.hideImportModal();
     }
 }
 
